@@ -3,8 +3,9 @@ from inference import get_clip_embedding
 from vectordb import VectorDatabase
 from product_queries import get_product_by_id
 import os
-from db import load_metadata_from_disk
+from db import load_metadata_from_disk, load_logs_from_disk, save_logs_to_disk, log_event
 load_metadata_from_disk()
+load_logs_from_disk()
 
 app = Flask(__name__)
 vectordb = VectorDatabase(dimension=512)
@@ -12,34 +13,13 @@ vectordb.load("faiss/vector.index", "faiss/product_ids.json")
 
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({"message": "Welcome! Use /match for one image or /batch_match for a folder of images."})
-
-@app.route("/match", methods=["GET"])
-def match():
-    image_name = os.environ.get("IMAGE_NAME", "airmax90.jpg")
-    image_path = f"/app/images/{image_name}"
-
-    if not os.path.exists(image_path):
-        return jsonify({"error": f"Image not found: {image_path}"}), 404
-
-    emb = get_clip_embedding(image_path)
-    matches = vectordb.search(emb, k=1)
-
-    if not matches:
-        return jsonify({"message": "No match found"}), 404
-
-    prod_id, score = matches[0]
-    product = get_product_by_id(prod_id)
-    if not product:
-        return jsonify({"error": f"No metadata found for product ID: {prod_id}"}), 404
-
-    product["similarity"] = score
-    return jsonify(product)
+    return jsonify({"message": "Welcome! Goto /batch_match for results."})
 
 @app.route("/batch_match", methods=["GET"])
 def batch_match():
     image_dir = os.environ.get("IMAGE_DIR", "/app/input_images")
     if not os.path.exists(image_dir):
+        log_event("ERROR", "Image directory not found", {"path": image_dir})
         return jsonify({"error": f"Image directory '{image_dir}' not found."}), 400
 
     results = []
@@ -50,10 +30,12 @@ def batch_match():
         path = os.path.join(image_dir, filename)
         emb = get_clip_embedding(path)
         if emb is None:
+            log_event("WARNING", "Embedding failed", {"image": filename})
             continue
 
         matches = vectordb.search(emb, k=1)
         if not matches:
+            log_event("INFO", "No match found", {"image": filename})
             continue
 
         prod_id, score = matches[0]
@@ -63,7 +45,14 @@ def batch_match():
             product["similarity"] = score
             product["image"] = filename
             results.append(product)
-
+            log_event("INFO", "Match found", {
+                "image": filename,
+                "product_id": str(prod_id),
+                "score": score
+            })
+    
+    log_event("INFO", "Batch match completed", {"results_count": len(results)})
+    save_logs_to_disk()
     return jsonify(results)
 
 
