@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  matcher:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - IMAGE_DIR=/app/input_images
+    volumes:
+      - ./app:/app
+      - ./app/faiss:/app/faiss
+      - ./app/meta:/app/meta
+      - ${IMAGE_DIR}:/app/input_images
+    depends_on:
+      - triton
+
+  triton:
+    image: nvcr.io/nvidia/tritonserver:25.02-py3
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model_repository:/models
+    command: >
+      tritonserver
+      --model-repository=/models
+      --model-control-mode=explicit
+      --load-model=clip_visual

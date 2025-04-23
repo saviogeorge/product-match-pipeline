@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "prod_001",
+    "name": "Air Max 90",
+    "category": "Shoes",
+    "price": 129.99
+  },
+  {
+    "_id": "prod_002",
+    "name": "Canvas Backpack",
+    "category": "Bags",
+    "price": 69.95
+  },
+  {
+    "_id": "prod_003",
+    "name": "Coffee Mug",
+    "category": "Mug",
+    "price": 9.95
+  }
+]
