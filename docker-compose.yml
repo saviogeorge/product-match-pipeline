@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # Matcher service (your application)
   matcher:
     build: .
     ports:
@@ -15,14 +16,18 @@ services:
     depends_on:
       - triton
 
+  # Triton Inference Server
   triton:
     image: nvcr.io/nvidia/tritonserver:25.02-py3
     ports:
-      - "8000:8000"
+      - "8000:8000"  # For HTTP API access
+      - "8001:8001"  # For gRPC access (if needed)
     volumes:
-      - ./model_repository:/models
+      - ${MODEL_REPO}:/models # Model repo based on the env variable
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all # Automatically detect GPUs (disabled for CPU-only)
     command: >
       tritonserver
       --model-repository=/models
       --model-control-mode=explicit
-      --load-model=clip_visual
+      --load-model=${MODEL_NAME} 

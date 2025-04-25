@@ -59,3 +59,35 @@ def batch_match():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+
+
+#docker run --rm -it --gpus all nvcr.io/nvidia/tensorrt:24.03-py3 bash
+
+#  Run TensorRT Docker with trtexec
+# Start the Docker container:
+
+# bash
+# Copy
+# docker run --rm -it --gpus all \
+#   -v $(pwd):/workspace \
+#   nvcr.io/nvidia/tensorrt:24.03-py3 \
+#   bash
+# 🔁 This mounts your current directory ($(pwd)) into the container so you can access your model files.
+
+# Inside the container: Run trtexec with FP16
+
+# bash
+# Copy
+# cd /workspace
+
+# trtexec \
+#   --onnx=clip_visual.onnx \
+#   --saveEngine=clip_visual_fp16.engine \
+#   --explicitBatch \
+#   --fp16
+# ✅ This creates a TensorRT engine file: clip_visual_fp16.engine.
+
+
+# Option B: Use TensorRT .engine but must run with GPU
+# You need to run your Triton container with GPU support (--gpus all) and use the TensorRT backend.
