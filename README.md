@@ -97,7 +97,6 @@ Response:
 ## 🛠️ Future Improvements
 
 - ✅ Parallelize image matching for better throughput
-- ✅ Use a quantized model using TensorRT.
 - ✅ Optimize latency by applying batching or caching strategies.
 
 ---
