@@ -31,10 +31,12 @@ This project is a **Dockerized AI-powered product matcher** that uses image embe
 │   ├── inference.py            # CLIP model wrapper
 │   ├── product_queries.py      # Product lookup logic
 │   └── main.py                 # Flask API entrypoint
-├── model_repository/           # Triton model repo
+├── model_repository_onnx/           # Triton model repo
+├── model_repository_trt/           # Triton model repo
 ├── Dockerfile
 ├── docker-compose.yml
 └── README.md
+├── requirements.txt
 ```
 
 ---
